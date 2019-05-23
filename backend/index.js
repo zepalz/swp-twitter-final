@@ -1,9 +1,11 @@
+const cors = require('cors')
 const express = require('express')
-const Twitter = require('twitter');
-const socketIO = require('socket.io')
 const moment = require('moment')
-const app = express()
+const Twitter = require('twitter');
 
+const socketIO = require('socket.io')
+
+const app = express()
 const T = new Twitter({
     consumer_key: 'zMdSN5Q6wNyyn2UZCjykoM8Ax',
     consumer_secret: 'eEXvnqEXhsKGr7CxTdCo9UbiIDkpjm5On9ScO3G7zFuGsNYugL',
@@ -12,6 +14,8 @@ const T = new Twitter({
 });
 
 const port = '8000';
+
+app.use(cors())
 
 const server = app.listen(port, () => {
     console.log('Server is listening at ' + port)

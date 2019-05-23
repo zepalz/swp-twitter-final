@@ -1,6 +1,5 @@
 import { findIndex, propEq } from 'ramda'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
-import moment from 'moment'
 import React, { Component } from 'react'
 
 import socketIOClient from 'socket.io-client'
@@ -52,11 +51,9 @@ class App extends Component {
     }
 
     render() {
-        console.log(this.state.tweets);
-
         return (
             <div style={{ textAlign: 'center'}}>
-                <h1>Today's Tradewar Hashtag Count</h1>
+                <h1>Today's #Tradewar Count</h1>
                 <LineChart
                     width={1000}
                     height={600}
