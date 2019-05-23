@@ -1,7 +1,7 @@
 const cors = require('cors')
 const express = require('express')
-const moment = require('moment')
 const Twitter = require('twitter');
+const firebase = require('./firebase')
 
 const socketIO = require('socket.io')
 
@@ -13,9 +13,13 @@ const T = new Twitter({
     access_token_secret: 'TntQVzKeUYqak6rS8AEVRaXkJjFOsldmOUpj9e3ckDyE3'
 });
 
-const port = '8000';
+const port = process.env.PORT || '8000';
 
 app.use(cors())
+app.get("/", (req, res) => {
+    res.send("TEST");
+});
+
 
 const server = app.listen(port, () => {
     console.log('Server is listening at ' + port)
@@ -29,15 +33,21 @@ socketIOServer.on('connection', client => {
     })
 })
 
-const stream = T.stream('statuses/filter', { track: '#tradewar' })
-stream.on('data', function (event) {
-    if (event) {
-        const createdAt = moment(event.created_at).format('HH')+':00'
+let countTweet = { createdAt: Date.now(), count: 0 }
 
-        console.log(createdAt);
+setInterval(() => {
+    firebase.database().ref('/tweets/').push(countTweet)
+    socketIOServer.sockets.emit('data', countTweet)
+    countTweet = { createdAt: Date.now(), count: 0 }
+}, 60 * 1000)
 
-        socketIOServer.sockets.emit('data', { text: event.text, createdAt })
-    }
-})
-
-
+setTimeout(() => {
+    const stream = T.stream('statuses/filter', { track: '#tradewar' })
+    stream.on('data', function (event) {
+        if (event) {
+            countTweet.count++
+            console.log(countTweet);
+        }
+    })
+}, 0)
+// }, 5 * 60 * 1000)

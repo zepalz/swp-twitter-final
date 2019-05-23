@@ -1,66 +1,65 @@
-import { findIndex, propEq } from 'ramda'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import React, { Component } from 'react'
 
 import socketIOClient from 'socket.io-client'
 
+import firebase from './firebase'
+
 class App extends Component {
     state = {
-        tweets: [
-            { count: 0, createdAt: '00:00' },
-            { count: 0, createdAt: '01:00' },
-            { count: 0, createdAt: '02:00' },
-            { count: 0, createdAt: '03:00' },
-            { count: 0, createdAt: '04:00' },
-            { count: 0, createdAt: '05:00' },
-            { count: 0, createdAt: '06:00' },
-            { count: 0, createdAt: '07:00' },
-            { count: 0, createdAt: '08:00' },
-            { count: 0, createdAt: '09:00' },
-            { count: 0, createdAt: '10:00' },
-            { count: 0, createdAt: '11:00' },
-            { count: 0, createdAt: '12:00' },
-            { count: 0, createdAt: '13:00' },
-            { count: 0, createdAt: '14:00' },
-            { count: 0, createdAt: '15:00' },
-            { count: 0, createdAt: '16:00' },
-            { count: 0, createdAt: '17:00' },
-            { count: 0, createdAt: '18:00' },
-            { count: 0, createdAt: '19:00' },
-            { count: 0, createdAt: '20:00' },
-            { count: 0, createdAt: '21:00' },
-            { count: 0, createdAt: '22:00' },
-            { count: 0, createdAt: '23:00' },
-        ],
-        endpoint: "localhost:8000"
+        tweetsFromFirebase: [],
+        tweetsFromSocket: [],
+        endpoint: "https://swp-final-twitter.appspot.com/"
     }
 
     componentDidMount = () => {
-        const { endpoint, tweets } = this.state
-        const temp = tweets
-        const socket = socketIOClient(endpoint)
+        const socket = socketIOClient(this.state.endpoint)
         socket.on('data', (newTweet) => {
-            const index = findIndex(propEq('createdAt', newTweet.createdAt))(tweets)
-            if (index >= 0) {
-                tweets[index].count++
-            } else {
-                temp.push({ count: 1, createdAt: newTweet.createdAt })
+            const date = new Date(newTweet.createdAt)
+            const tweet = {
+                count: newTweet.count,
+                createdAt: `${date.getHours()}:${date.getMinutes()}`
             }
-            this.setState({ tweets: temp })
+            this.setState({
+                tweetsFromSocket: [...this.state.tweetsFromSocket, tweet]
+            })
+        })
+        firebase.database().ref('/tweets/').on('value', (snapshot) => {
+            console.log(snapshot.val());
+
+            this.setState({
+                tweetsFromFirebase: Object.values(snapshot.val() || {}).map(tweet => {
+                    const date = new Date(tweet.createdAt)
+                    return {
+                        count: tweet.count,
+                        createdAt: `${date.getHours()}:${date.getMinutes()}`
+                    }
+                })
+            })
         })
     }
 
     render() {
         return (
-            <div style={{ textAlign: 'center'}}>
-                <h1>Today's #Tradewar Count</h1>
+            <div style={{ marginLeft: 20 }}>
+                <h1>#Tradewar Count VERSION 1 with SOCKET</h1>
                 <LineChart
                     width={1000}
                     height={600}
-                    data={this.state.tweets}
-                    margin={{
-                        top: 5, right: 30, left: 20, bottom: 5,
-                    }}
+                    data={this.state.tweetsFromSocket}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="createdAt" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
+                </LineChart>
+                <h1>#Tradewar Count VERSION 2 with FIREBASE</h1>
+                <LineChart
+                    width={1000}
+                    height={600}
+                    data={this.state.tweetsFromFirebase}
                 >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="createdAt" />
