@@ -28,7 +28,7 @@ socketIOServer.on('connection', client => {
 const stream = T.stream('statuses/filter', { track: '#tradewar' })
 stream.on('data', function (event) {
     if (event) {
-        const createdAt = moment(event.created_at).format('YYYY-MM-DD HH:mm')
+        const createdAt = moment(event.created_at).format('HH')+':00'
 
         console.log(createdAt);
 
