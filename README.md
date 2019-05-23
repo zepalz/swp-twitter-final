@@ -24,4 +24,4 @@
 1. kubectl run <anything> --image=gcr.io/<project-id>/twitter-frontend:v1 --port 5000
 1. kubectl get pods
 1. kubectl expose deployment <anything> --type=LoadBalancer --port 80 --target-port 5000
-1. kubectl get services then open the port following by <anything>
+1. kubectl get services then open the port following by <anything># swp-twitter-final
